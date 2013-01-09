@@ -1,0 +1,25 @@
+<h1>Login</h1>
+<form name="loginForm">
+    <fieldset>
+        <div class="clearfix  " id="username_field">
+            <label for="username">Username</label>
+            <div class="input">
+                <input type="text" id="username" name="username" ng-model="user.username" required>
+                <span ng-show="loginForm.username.$error.required" class="help-inline">
+                    Required</span>
+            </div>
+        </div>
+        <div class="clearfix  " id="password_field">
+            <label for="password">Password</label>
+            <div class="input">
+                <input type="password" id="password" name="password" ng-model="user.password" required>
+                <span ng-show="loginForm.password.$error.required" class="help-inline">
+                    Required</span>
+            </div>
+        </div>
+    </fieldset>
+    <div class="actions">
+        <button ng-click="login()" ng-disabled="loginForm.$invalid" class="btn btn-primary">Login</button>
+        <button ng-click="logout()" ng-disabled="loginForm.username.$invalid" class="btn btn-primary">Logout</button>
+    </div>
+</form>

@@ -1,0 +1,46 @@
+<h1>{{page.total}} computers a found</h1>
+<div class="alert alert-error" ng-show="error">
+    <strong>{{error}}</strong>
+</div>
+<div id="actions">
+    <form class="form-search" ng-submit="find()">
+    <input type="text" ng-model="search" class="search-query" placeholder="Search">
+    <input type="submit" id="searchsubmit" value="Filter by name" class="btn btn-primary">
+    <a href="#/new" class="btn btn-success" id="add">Add a new computer</a>
+    </form>
+</div>
+<table class="computers table table-striped table-bordered">
+    <thead>
+    <tr>
+        <th class="col2">Computer name</th>
+        <th class="col3">Introduced</th>
+        <th class="col4">Discontinued</th>
+        <th class="col5">Company</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr ng-repeat="item in page.items | orderBy: 'name'">
+        <td><a href="#/edit/{{item.computer.id}}">{{item.computer.name}}</a></td>
+        <td>{{item.computer.introduced | undef }}</td>
+        <td>{{item.computer.discontinued | undef }}</td>
+        <td>{{item.company.name}}</td>
+    </tr>
+    </tbody>
+</table>
+
+<div id="pagination" class="pagination pagination-centered">
+    <ul>
+        <li class="prev" ng-class="{disabled: isFirstPage}">
+            <span ng-show="isFirstPage">&larr; Previous</span>
+            <a ng-click="prevPage()" ng-hide="isFirstPage">&larr; Previous</a>
+        </li>
+        <li class="current">
+            <span>Displaying {{page.offset + 1}} to {{ page.offset + page.items.length }} of {{ page.total }}</span>
+        </li>
+        <li class="next" ng-class="{disabled: isLastPage}">
+            <span ng-show="isLastPage">Next &rarr;</span>
+            <a ng-click="nextPage()" ng-hide="isLastPage">Next &rarr;</a>
+        </li>
+    </ul>
+</div>
+
