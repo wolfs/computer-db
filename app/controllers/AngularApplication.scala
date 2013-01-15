@@ -35,7 +35,7 @@ object AngularApplication extends Controller with Secured {
     val body = request.body
     (for {
       password <- (body \ "password").asOpt[String] if check(username, password)
-    } yield NoContent.withSession(Security.username -> username)).getOrElse(BadRequest("Invalid username or password"))
+    } yield NoContent.withCookies(UsernameCookie.encodeAsCookie(Some(Username(username))))).getOrElse(BadRequest("Invalid username or password"))
   }
 
   def logout(user: String) = withAuthAndLogout { loggedInUser => implicit request =>

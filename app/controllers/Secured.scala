@@ -7,7 +7,7 @@ import play.api.mvc._
  */
 trait Secured {
 
-  def username(request: RequestHeader) = request.session.get(Security.username)
+  def username(request: RequestHeader) = UsernameCookie.decodeFromCookie(request.cookies.get(UsernameCookie.COOKIE_NAME)).map { _.username }
 
   def onUnauthorized(request: RequestHeader) = Results.Unauthorized
 
@@ -31,7 +31,7 @@ trait Secured {
     withAuthAndLogout(BodyParsers.parse.anyContent)(f)
 
   def addUsernameCookie(user: String, result: Result): Result = {
-    result.withSession(Security.username -> user).withCookies(UsernameCookie.encodeAsCookie(Some(Username(user))))
+    result.withCookies(UsernameCookie.encodeAsCookie(Some(Username(user))))
   }
 
   def authenticated[A](bodyParser : BodyParser[A])(f : Request[A] => Result): Action[(Action[A], A)] = withAuth(bodyParser)((user) => f)
