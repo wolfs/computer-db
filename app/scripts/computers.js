@@ -1,6 +1,8 @@
 var computerApp = {
     constant: {},
     controller: {},
+    provider: {},
+    value: {},
     serviceFactory: {}
 }
 
@@ -38,7 +40,7 @@ computerApp.constant.urlParameters =  function(page, search) {
     return params;
 };
 
-computerApp.constant.baseUrl = 'http://localhost:9000\:9000'
+computerApp.constant.baseUrl = 'http://localhost:9001\:9001'
 
 computerApp.controller.ListCtrl.resolve = {
     computers: function(Computer, $location, urlParameters, resolveService) {
@@ -107,26 +109,51 @@ computerApp.controller.EditCtrl = function($scope, $location, $routeParams, Comp
     };
 };
 
-computerApp.controller.LoginCtrl = function($scope, $location, Login, User) {
+computerApp.controller.LoginCtrl = function($scope, $location, Login, User, $q, RetryHttpService) {
 
     $scope.login = function() {
         Login.save($scope.user, function() {
-            $location.path("/")
+            hide();
+            RetryHttpService.retryRequests();
         });
     };
+
+    $scope.$on('event:loginRequired', function() {
+        if ($scope.user) {
+            $scope.user.password = '';
+        }
+        show();
+    });
+
+    function show() {
+        $('#login-modal').modal('show');
+    }
+
+    function hide() {
+        $('#login-modal').modal('hide');
+    }
 };
 
-computerApp.controller.NavController = function($scope, User, Login, $location) {
+computerApp.controller.NavCtrl = function($scope, User, Login, $rootScope) {
     $scope.user = User.get();
-    $scope.userservice = User.get;
+
+    $scope.username = function() {
+        return User.get().username;
+    }
+
+    $scope.isLogin = function() {
+        return $scope.username();
+    }
     $scope.getClass = function() {
         return '';
     }
-    $scope.logout = function() {
-        Login.delete(User.get(), function() {
-            $location.path("/login");
-        });
+    $scope.login = function() {
+        $rootScope.$broadcast('event:loginRequired');
     };
+    $scope.logout = function() {
+        Login.delete(User.get());
+    };
+
 
 }
 
@@ -152,6 +179,57 @@ computerApp.serviceFactory.Login = function($resource, baseUrl) {
     return Login;
 };
 
+computerApp.provider.RetryHttpService = function() {
+    var requests401 = [];
+    this.interceptor = function($rootScope, $q, flash) {
+        function success(response) {
+            return response;
+        }
+
+        function error(response) {
+            var status = response.status;
+
+            if (status == 401) {
+                var deferred = $q.defer();
+                var req = {
+                    config: response.config,
+                    deferred: deferred
+                }
+                requests401.push(req);
+                $rootScope.$broadcast('event:loginRequired');
+                return deferred.promise;
+            }
+            // otherwise
+            flash.add({message: "Server error: " + status,  longMessage: response.data})
+            return $q.reject(response);
+
+        }
+
+        return function(promise) {
+            return promise.then(success, error);
+        }
+    };
+
+    this.$get =  function($http) {
+        return {
+            retryRequests: function() {
+                var i, requests = requests401;
+                for (i = 0; i < requests.length; i++) {
+                    retry(requests[i]);
+                }
+                requests401 = [];
+
+                function retry(req) {
+                    $http(req.config).then(function(response) {
+                        req.deferred.resolve(response);
+                    });
+                }
+            }
+        };
+    };
+
+}
+
 computerApp.serviceFactory.Company = function($resource, baseUrl) {
     return $resource(baseUrl + '/api/companies/:id')
 };
@@ -164,13 +242,81 @@ computerApp.serviceFactory.User = function($cookieStore) {
             if (cookie) {
                 return cookie.data;
             } else {
-                return undefined;
+                return { };
             }
         }
     }
 }
 
-angular.module('application', ['ngResource', 'ngCookies']).
+computerApp.controller.FlashCtrl = function($scope, flash) {
+    $scope.flashes = flash.getAll()
+
+    $scope.$on('flash.add', function(event, flash) {
+        $scope.flashes.push(flash)
+    });
+}
+
+computerApp.serviceFactory.flash = function($rootScope) {
+    var flashes = [];
+
+    return {
+
+        /**
+         * add adds a single flash message.
+         *
+         * @param message
+         *  A string representing the flash message
+         * @param level
+         *  the classification of the flash options are:
+         *  - 'info' // the default
+         *  - 'success'
+         *  - 'error'
+         */
+        add: function (message, level) {
+            // default value for the level parameter
+            level = level || 'info';
+
+            var flash = {
+                message: message,
+                level: level
+            };
+            flashes.push(flash);
+
+            // tell child scope that this flash has been added
+            $rootScope.$broadcast('flash.add', flash);
+        },
+
+        /**
+         * all returns all flashes, but does **not** clear them
+         * @return {Array}
+         */
+        all: function () {
+            return flashes;
+        },
+
+        /**
+         * clear removes all flashes
+         */
+        clear: function () {
+            $rootScope.$broadcast('flash.clear', true);
+            flashes = [];
+        },
+
+        /**
+         * getAll returns all flashes and clears them
+         *
+         * @return {Array}
+         */
+        getAll: function () {
+            $rootScope.$broadcast('flash.remove');
+            var f = angular.copy(flashes);
+            flashes = [];
+            return f;
+        }
+    };
+};
+
+angular.module('application', ['ngResource', 'ngCookies', 'ngSanitize']).
     config(function($routeProvider) {
         $routeProvider.
             when('/',           {redirectTo: '/list'}).
@@ -195,19 +341,16 @@ angular.module('application', ['ngResource', 'ngCookies']).
     }).
     controller(computerApp.controller).
     factory(computerApp.serviceFactory).
+    provider(computerApp.provider).
+    value(computerApp.value).
+    config(function($httpProvider, RetryHttpServiceProvider) {
+        $httpProvider.responseInterceptors.push(RetryHttpServiceProvider.interceptor)
+    }).
     run(function($rootScope) {
         $rootScope.$on("$routeChangeError", function(event, current, previous, rejected) {
-            console.log(event);
-            console.log(current);
-            console.log(previous);
-            console.log(rejected);
             event.currentScope.error = "We have an error"
         });
         $rootScope.$on("$routeChangeSuccess", function(event, current, previous, rejected) {
-            console.log(event);
-            console.log(current);
-            console.log(previous);
-            console.log(rejected);
             event.currentScope.error = undefined;
         });
     })
