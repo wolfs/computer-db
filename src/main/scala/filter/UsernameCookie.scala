@@ -1,31 +1,39 @@
 package filter
 
 import _root_.util.Crypto
-import spray.json.DefaultJsonProtocol._
-import spray.json.JsObject
-import spray.json._
+import scalaz._
+import Scalaz._
+import org.json4s._
+import org.json4s.native.JsonMethods._
+import org.json4s.JsonDSL._
+import org.json4s.scalaz.JsonScalaz._
+import org.json4s.native.scalaz._
+import _root_.util.json._
+import unfiltered.Cookie
 
 /**
  * @author wolfs
  */
-class UsernameCookie {
+object UsernameCookie {
 
   val crypto = Crypto("E27D^[_<Lpt0vjad]de;3;tx3gpRmG4ByofnahOIo9gbsMWut1w3xg[>9W")
 
   val isSigned = true
 
-  def encode(username: String): String = {
-    val json = JsObject("username" -> JsString(username))
+  val name = "LOGGED_IN_USER_COMPUTER_APP"
+
+  def encode(username: String): Cookie = {
+    val json = JObject("username" -> JString(username))
     val string = if (isSigned) {
-      val toSign = json.compactPrint
+      val toSign = json.shows
       val hash = crypto.sign(toSign)
-      JsObject(
+      JObject(
         "data" -> json,
-        "hash" -> JsString(hash)
-      ).compactPrint
+        "hash" -> JString(hash)
+      ).shows
     } else
-      json.compactPrint
-    java.net.URLEncoder.encode(string, "UTF-8")
+      json.shows
+    Cookie(name = name, value = java.net.URLEncoder.encode(string, "UTF-8"))
   }
 
   def decode(data: String): String = {
@@ -40,7 +48,7 @@ class UsernameCookie {
       } else {
         var equal = 0
         for (i <- Array.range(0, a.length)) {
-          equal |= a(i) ^ b(i)
+          equal |= a.charAt(i) ^ b.charAt(i)
         }
         equal == 0
       }
@@ -49,16 +57,16 @@ class UsernameCookie {
     try {
       val json = urlDecode(data).asJson
       if (isSigned) {
-        val data = json \\ "data"
-        val message = Json.fromJson[Map[String, String]](data).getOrElse(Map.empty)
-        if (safeEquals(Json.fromJson[String](json \ "hash").getOrElse(""), Crypto.sign(data.toString())))
+        val data = json \ "data"
+        val message = (data \ "username").convertTo[String].getOrElse("")
+        if (safeEquals((json \ "hash").convertTo[String].getOrElse(""), crypto.sign(data.shows)))
           message
         else
-          Map.empty[String, String]
-      } else Json.fromJson[Map[String, String]](json).getOrElse(Map.empty)
+          ""
+      } else (json \ "username").convertTo[String].getOrElse("")
     } catch {
       // fail gracefully is the session cookie is corrupted
-      case _: Exception => Map.empty[String, String]
+      case _: Exception => ""
     }
 
   }

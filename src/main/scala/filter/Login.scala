@@ -5,8 +5,15 @@ import util.PrefixSeg
 import unfiltered.request.{DELETE, Path, POST}
 import unfiltered.response.{NoContent, SetCookies, ToCookies}
 import unfiltered.Cookie
-import spray.json.DefaultJsonProtocol._
-import spray.json.{JsString, JsObject}
+import scalaz._
+import Scalaz._
+import org.json4s._
+import org.json4s.native.JsonMethods._
+import org.json4s.JsonDSL._
+import org.json4s.scalaz.JsonScalaz._
+import org.json4s.native.scalaz._
+import _root_.util.json._
+import java.net.URLEncoder
 
 /**
  * @author wolfs
@@ -16,8 +23,9 @@ object Login extends Plan {
 
   def intent: Plan.Intent = {
     case req@Path(Seg(idString :: Nil)) => req match {
-      case POST(_) => NoContent ~> SetCookies(Cookie("LOGGED_IN_USER_COMPUTER_APP", java.net.URLEncoder.encode(JsObject("data" -> JsObject("username" -> JsString("admin"))).compactPrint, "UTF-8")))
-      case DELETE(_) => NoContent ~> SetCookies.discarding("LOGGED_IN_USER_COMPUTER_APP")
+      case POST(_) => NoContent ~> SetCookies(
+          UsernameCookie.encode(idString))
+      case DELETE(_) => NoContent ~> SetCookies.discarding(UsernameCookie.name)
     }
   }
 }
