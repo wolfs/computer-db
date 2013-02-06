@@ -11,34 +11,32 @@ buildscript {
 
 apply plugin: 'idea-scala-project'
 
+subprojects { subproject ->
+    ['scala', 'idea-scala-facet'].each { plugin -> subproject.apply plugin: plugin }
+}
+
 allprojects {
     apply plugin: 'eclipse'
     ext.scalaMajorVersion = '2.10'
     ext.scalaMinorVersion = '0'
     ext.scalaVersion = "${scalaMajorVersion}.${scalaMinorVersion}"
-}
-
-dependencies {
-    scalaApi "org.scala-lang:scala-library:${scalaVersion}"
-    scalaApi "org.scala-lang:scala-reflect:${scalaVersion}"
-    scalaTools "org.scala-lang:scala-compiler:${scalaVersion}"
-}
-
-subprojects { subproject ->
-    ['scala', 'eclipse', 'idea-scala-facet'].each { plugin -> subproject.apply plugin: plugin }
-
-
     dependencies {
         scalaApi "org.scala-lang:scala-library:${scalaVersion}"
         scalaApi "org.scala-lang:scala-reflect:${scalaVersion}"
         scalaTools "org.scala-lang:scala-compiler:${scalaVersion}"
+    }
+}
+
+
+subprojects { subproject ->
+    dependencies {
         compile 'ch.qos.logback:logback-classic:1.0.9'
         testCompile "org.scalatest:scalatest_${scalaVersion}:1.8"
         testCompile 'junit:junit-dep:4.11'
     }
 }
 
-project(':server') {
+project(':unfiltered-backend') {
     apply plugin: 'application'
     mainClassName = 'filter.Main'
 
