@@ -14,6 +14,37 @@ computerApp.controller.ListCtrl = function($scope, $location, computers, urlPara
     };
     $scope.search = $location.search().f;
 
+    $scope.sort = { column: $location.search().s, descending: $location.search().d };
+
+    $scope.head = [
+        {name: 'Computer name', column: 1, class: {'col2': true}},
+        {name: 'Introduced', column: 2, class: {'col3': true}},
+        {name: 'Discontinued', column: 3, class: {'col4': true}},
+        {name: 'Company', column: 4, class: {'col5': true}}
+    ];
+
+    $scope.changeSorting = function(column) {
+        var sort = $scope.sort;
+        if (sort.column == column) {
+            sort.descending = !sort.descending;
+        } else {
+            sort.column = column;
+            sort.descending = false;
+        }
+        var search = $location.search()
+        search.s = sort.column;
+        search.d = sort.descending;
+        $location.search(search);
+    };
+
+    $scope.selectedCls = function(column) {
+        var boolean2Sort = { false: 'sort-down', true: 'sort-up' }
+        return column == $scope.sort.column && boolean2Sort[$scope.sort.descending];
+    };
+
+    $scope.isSortColumn = function(column) {
+        return $scope.sort.column == column
+    }
     update(computers);
 
     $scope.find = function() {
@@ -28,7 +59,7 @@ computerApp.controller.ListCtrl = function($scope, $location, computers, urlPara
     }
 };
 
-computerApp.constant.urlParameters =  function(page, search) {
+computerApp.constant.urlParameters =  function(page, search, sort, desc) {
     var params = {};
 
     if (search) {
@@ -37,16 +68,22 @@ computerApp.constant.urlParameters =  function(page, search) {
     if (page !== undefined) {
         params.p = page;
     }
+    if (sort !== undefined) {
+        params.s = sort;
+    }
+    if (desc !== undefined) {
+        params.d = desc;
+    }
     return params;
 };
 
-computerApp.constant.baseUrl = 'http://localhost:9001\:9001'
+computerApp.constant.baseUrl = '' //http://localhost:9001\:9001'
 
 computerApp.controller.ListCtrl.resolve = {
     computers: function(Computer, $location, urlParameters, resolveService) {
         var search = $location.search().f;
 
-        var params = urlParameters($location.search().p, search);
+        var params = urlParameters($location.search().p, search, $location.search().s, $location.search().d);
 
         return resolveService.resourcePromise(Computer.query, params);
     }
@@ -151,7 +188,7 @@ computerApp.controller.NavCtrl = function($scope, User, Login, $rootScope) {
         $rootScope.$broadcast('event:loginRequired');
     };
     $scope.logout = function() {
-        Login.delete(User.get());
+        Login.delete({ username: User.get().username });
     };
 
 

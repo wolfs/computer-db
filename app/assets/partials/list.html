@@ -12,10 +12,7 @@
 <table class="computers table table-striped table-bordered">
     <thead>
     <tr>
-        <th class="col2">Computer name</th>
-        <th class="col3">Introduced</th>
-        <th class="col4">Discontinued</th>
-        <th class="col5">Company</th>
+        <th ng-repeat="th in head" ng-class="th.class" ng-click="changeSorting(th.column)">{{th.name}}<span ng-class="selectedCls(th.column)"></span></th>
     </tr>
     </thead>
     <tbody>
