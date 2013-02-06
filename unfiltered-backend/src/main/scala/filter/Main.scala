@@ -32,7 +32,7 @@ object Main extends Db {
     flyway.setDataSource(dataSource)
     flyway.migrate()
     val here = new File("here")
-    unfiltered.jetty.Http.local(53333).resources(new URL(here.toURI().toURL(),"../../angular-frontend/_public"))
+    unfiltered.jetty.Http.local(53333).resources(new URL(here.toURI().toURL(),"../angular-frontend/_public"))
     .filter(Planify(companyPlan.intent))
     .filter(Planify(computerPlan.intent))
     .filter(Login).run()
