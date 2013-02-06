@@ -1,0 +1,14 @@
+**/.DS_Store
+nbproject
+manifest.mf
+build.xml
+
+.project
+.settings
+.idea/*
+
+_public
+node_modules/*
+npm-debug.log
+
+test/test-results.xml

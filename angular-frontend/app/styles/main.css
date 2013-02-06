@@ -1,0 +1,80 @@
+html {
+    background: #eee;
+}
+
+header h1 {
+    padding: 0.4em 1.1em;
+    color: white;
+    font-weight: normal;
+    font-size: 24px;
+}
+
+section#main {
+    position: relative;
+    padding: 5em 2em;
+    border-bottom: 1px solid #ccc;
+    min-height: 600px;
+}
+
+section#main .topRight {
+    position: absolute;
+    right: 20px;
+    top: 70px;
+}
+
+table.computers em {
+    color: #aaa;
+}
+
+table.computers .col3, table.computers .col4 {
+    width: 13%;
+    min-width: 100px;
+}
+
+table.computers .col5 {
+    width: 30%;
+    min-width: 300px;
+}
+
+table.computers .header a {
+}
+
+#actions {
+    position: relative;
+}
+
+#actions #add {
+    position: absolute;
+    right: 0;
+    top: 0;
+}
+
+.sort-down {
+    display: inline-block;
+    width: 0;
+    height: 0;
+    vertical-align: top;
+    border-top:   4px solid #000;
+    border-right: 4px solid transparent;
+    border-left:  4px solid transparent;
+    content: "";
+    margin-top: 8px;
+    margin-left: 8px;
+}
+
+.sort-up {
+    display: inline-block;
+    width: 0;
+    height: 0;
+    vertical-align: top;
+    border-top:   0;
+    border-bottom: 4px solid #000;
+    border-right: 4px solid transparent;
+    border-left:  4px solid transparent;
+    content: "";
+    margin-top: 8px;
+    margin-left: 8px;
+}
+
+
+
