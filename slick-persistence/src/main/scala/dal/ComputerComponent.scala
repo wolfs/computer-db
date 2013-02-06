@@ -1,9 +1,20 @@
-package models
+package dal
 
 import java.util.Date
+import models._
 import scala.slick.lifted._
+import scala.slick.direct.AnnotationMapper.table
+import scala.slick.driver.ExtendedProfile
+import scala.slick.session.Session
+import util.SequenceId
 
-trait CompanyComponent { this: Profile =>
+trait Profile {
+  val profile: ExtendedProfile
+}
+
+class DAL(override val profile: ExtendedProfile) extends ComputerComponent with Profile
+
+trait ComputerComponent { self: Profile =>
   import profile.simple._
 
   object TypeMapper {
@@ -16,7 +27,7 @@ trait CompanyComponent { this: Profile =>
 
   }
 
-  object Companies extends Table[Company]("COMPANY") with WithSequence {
+  object Companies extends Table[Company]("COMPANY") with SequenceId {
     def id = column[Option[Long]]("ID", O.PrimaryKey)
     def name = column[String]("NAME")
     def * = id ~ name <> (Company.apply _, Company.unapply _)
@@ -50,7 +61,7 @@ trait CompanyComponent { this: Profile =>
     }
   }
 
-  object Computers extends Table[Computer]("COMPUTER") with WithSequence {
+  object Computers extends Table[Computer]("COMPUTER") with SequenceId {
     import TypeMapper._
     def id = column[Option[Long]]("ID", O.PrimaryKey)
     def name = column[String]("NAME")
@@ -114,7 +125,7 @@ trait CompanyComponent { this: Profile =>
         }
       }
 
-      def column: ((CompanyComponent.this.Computers.type, CompanyComponent.this.Companies.type)) => Column[_] = orderBy match {
+      def column: ((Computers.type, Companies.type)) => Column[_] = orderBy match {
         case 1 => _._1.name
         case 2 => _._1.introduced
         case 3 => _._1.discontinued

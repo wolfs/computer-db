@@ -1,6 +1,6 @@
 package filter
 
-import models.DAL
+import dal.DAL
 import util.PrefixSeg
 import slick.session.Session
 import unfiltered.filter.Plan
@@ -25,8 +25,11 @@ import org.json4s.scalaz.JsonScalaz._
 import org.json4s.native.scalaz._
 import _root_.util.json._
 import Transactional._
+import scala.slick.session.Database
+import unfiltered.Cycle
+import Authentication._
 
-class ComputerPlan(dal: DAL) {
+class ComputerPlan(dal: DAL, val db: Database) extends Db with Transactional {
   import models.MyJsonProtocol._
   val Seg = PrefixSeg("api", "computers")
 
@@ -50,9 +53,9 @@ class ComputerPlan(dal: DAL) {
   object Sort extends Params.Extract("s", Params.first ~> Params.int)
   object Descending extends Params.Extract("d", Params.first ~> boolean)
 
-  def intent: TransactionalIntent[Any, Any] = {
-  case req@Path(Seg(Nil)) => req match {
-    case GET(_) => { implicit session =>
+  def intent: Cycle.Intent[Any, Any] = {
+  case req@Path(Seg(Nil)) => auth {
+    case GET(_) => { implicit session: Session =>
       val Params(params) = req
       val page = Page.unapply(params).getOrElse(0)
       val filter = Filter.unapply(params).getOrElse("")
@@ -66,7 +69,7 @@ class ComputerPlan(dal: DAL) {
           descending = desc)
       ResponseString(computers.toJson.shows)
     }
-    case POST(_) => {  implicit session =>
+    case POST(_) => {  implicit session: Session =>
       val computerResult = Body.string(req).asJson.convertTo[Computer]
       badResultOnError(computerResult){ computer =>
           val insertedComputer = dal.Computers.insert(computer)
@@ -74,27 +77,27 @@ class ComputerPlan(dal: DAL) {
       }
     }
     case _ => Pass
-  }
-  case req@Path(Seg(idString :: Nil)) => {  implicit session =>
+  } (req)
+  case req@Path(Seg(idString :: Nil)) => { implicit session: Session =>
     try {
       val id = idString.toLong;
 
-      req match {
-      case GET(_) => {
-        val computer = dal.Computers.findById(id)
-        computer.map(c => ResponseString(c.toJson.shows)).getOrElse(NotFound)
-      }
-      case PUT(_) => {
-        val computerResult = Body.string(req).asJson.convertTo[Computer]
-        badResultOnError(computerResult){ computer =>
-            notFoundOrNoContent(dal.Computers.update(computer.copy(id = Some(id))))
+      auth {
+        case GET(_) => {
+          val computer = dal.Computers.findById(id)
+          computer.map(c => ResponseString(c.toJson.shows)).getOrElse(NotFound)
         }
-      }
-      case DELETE(_) => {
-        notFoundOrNoContent(dal.Computers.delete(id))
-      }
-      case _ => Pass
-      }
+        case PUT(_) => {
+          val computerResult = Body.string(req).asJson.convertTo[Computer]
+          badResultOnError(computerResult){ computer =>
+              notFoundOrNoContent(dal.Computers.update(computer.copy(id = Some(id))))
+          }
+        }
+        case DELETE(_) => {
+          notFoundOrNoContent(dal.Computers.delete(id))
+        }
+        case _ => Pass
+      } (req)
     } catch {
       case e: NumberFormatException => NotFound
     }

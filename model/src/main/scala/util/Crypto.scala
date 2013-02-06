@@ -47,28 +47,28 @@ case class Crypto(secret: String) {
     toHexString(cipher.doFinal(value.getBytes("utf-8")))
   }
 
-  /**
-   * Decrypt a String with the AES encryption standard using the application secret
-   * @param value An hexadecimal encrypted string
-   * @return The decrypted String
-   */
-  def decryptAES(value: String): String = {
-    decryptAES(value, secret.substring(0, 16))
-  }
-
-  /**
-   * Decrypt a String with the AES encryption standard. Private key must have a length of 16 bytes
-   * @param value An hexadecimal encrypted string
-   * @param privateKey The key used to encrypt
-   * @return The decrypted String
-   */
-  def decryptAES(value: String, privateKey: String): String = {
-    val raw = privateKey.getBytes("utf-8")
-    val skeySpec = new SecretKeySpec(raw, "AES")
-    val cipher = Cipher.getInstance("AES")
-    cipher.init(Cipher.DECRYPT_MODE, skeySpec)
-    new String(cipher.doFinal(hexStringToByte(value)))
-  }
+//  /**
+//   * Decrypt a String with the AES encryption standard using the application secret
+//   * @param value An hexadecimal encrypted string
+//   * @return The decrypted String
+//   */
+//  def decryptAES(value: String): String = {
+//    decryptAES(value, secret.substring(0, 16))
+//  }
+//
+//  /**
+//   * Decrypt a String with the AES encryption standard. Private key must have a length of 16 bytes
+//   * @param value An hexadecimal encrypted string
+//   * @param privateKey The key used to encrypt
+//   * @return The decrypted String
+//   */
+//  def decryptAES(value: String, privateKey: String): String = {
+//    val raw = privateKey.getBytes("utf-8")
+//    val skeySpec = new SecretKeySpec(raw, "AES")
+//    val cipher = Cipher.getInstance("AES")
+//    cipher.init(Cipher.DECRYPT_MODE, skeySpec)
+//    new String(cipher.doFinal(hexStringToByte(value)))
+//  }
 
   private val hexChars = Array('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f')
 
@@ -92,12 +92,12 @@ case class Crypto(secret: String) {
     new String(toHex(array))
   }
 
-  /**
-   * Transform an hexadecimal String to a byte array.
-   */
-  def hexStringToByte(hexString: String): Array[Byte] = {
-    import org.apache.commons.codec.binary.Hex;
-    Hex.decodeHex(hexString.toCharArray());
-  }
+//  /**
+//   * Transform an hexadecimal String to a byte array.
+//   */
+//  def hexStringToByte(hexString: String): Array[Byte] = {
+//    import org.apache.commons.codec.binary.Hex;
+//    Hex.decodeHex(hexString.toCharArray());
+//  }
 
 }

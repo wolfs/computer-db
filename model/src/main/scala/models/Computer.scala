@@ -1,47 +1,20 @@
 package models
 
 import java.util.Date
-import slick.direct.AnnotationMapper._
-import slick.direct.Queryable
-import slick.session.Session
-import scala.slick.jdbc.{StaticQuery => Q}
-import slick.driver.ExtendedProfile
 import org.json4s.scalaz.JsonScalaz._
 import org.json4s.scalaz._
-import slick.direct.AnnotationMapper.column
 import scala.Some
-import slick.direct.AnnotationMapper.table
-import slick.lifted.BaseTypeMapper
 import scalaz._
 import Scalaz._
 import org.json4s._
 import org.json4s.JsonAST.JValue
 import util.json._
 
-@table("company")
 case class Company(
-                    @column("id") id: Option[Long] = None,
-                    @column("name") name: String)
-
-object Company {
-  val companies = Queryable[Company]
-}
+                    id: Option[Long] = None,
+                    name: String)
 
 case class Computer(id: Option[Long] = None, name: String, introduced: Option[Date], discontinued: Option[Date], companyId: Option[Long])
-
-trait Profile {
-  val profile: ExtendedProfile
-}
-
-
-class DAL(override val profile: ExtendedProfile) extends CompanyComponent with Profile {
-}
-
-trait WithSequence {
-  def seqName: String
-  def nextId(implicit db: Session) =
-    Some((Q[Long] + s"select nextval('${seqName}_SEQ')").first)
-}
 
 /**
  * Helper for pagination.

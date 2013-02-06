@@ -1,6 +1,6 @@
 package filter
 
-import models.DAL
+import dal.DAL
 import unfiltered.filter.Plan
 import unfiltered.request.{GET, Path}
 import unfiltered.response.{Pass, ResponseString}
@@ -17,14 +17,16 @@ import org.json4s.native.scalaz._
 import _root_.util.json._
 import unfiltered.response.ResponseFunction
 import filter.Transactional._
+import unfiltered.Cycle
+import Authentication._
 
-class CompanyPlan(dal: DAL) {
+class CompanyPlan(dal: DAL, val db: Database) extends Transactional with Db {
   import models.MyJsonProtocol._
 
 
   val Seg = PrefixSeg("api", "companies")
 
-  def intent: TransactionalIntent[Any, Any] = {
+  def intent: Cycle.Intent[Any, Any] = auth {
     case GET(Path(Seg(Nil))) => { implicit session: Session =>
       val companies = dal.Companies.list
       ResponseString(companies.toJson.shows)

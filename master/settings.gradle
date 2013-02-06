@@ -1,1 +1,3 @@
+rootProject.name = 'unfiltered-backend'
+
 includeFlat 'model', 'slick-persistence', 'server'

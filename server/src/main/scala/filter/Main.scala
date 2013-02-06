@@ -15,14 +15,15 @@ import java.net.URL
 import unfiltered.Cycle
 import unfiltered.filter.Planify
 import filter.Transactional._
+import dal.DAL
 
 object Main extends Db {
   lazy val dal = new DAL(H2Driver)
 
   override lazy val db = Database.forURL("jdbc:h2:mem:computerdb;DB_CLOSE_DELAY=-1", driver = "org.h2.Driver", user = "", password = "")
 
-  lazy val companyPlan = new CompanyPlan(dal)
-  lazy val computerPlan = new ComputerPlan(dal)
+  lazy val companyPlan = new CompanyPlan(dal, db)
+  lazy val computerPlan = new ComputerPlan(dal, db)
 
 
   def main(args: Array[String]) {
@@ -31,7 +32,7 @@ object Main extends Db {
     flyway.setDataSource(dataSource)
     flyway.migrate()
     val here = new File("here")
-    unfiltered.jetty.Http.local(53333).resources(new URL(here.toURI().toURL(),"../angular-frontend/_public"))
+    unfiltered.jetty.Http.local(53333).resources(new URL(here.toURI().toURL(),"../../angular-frontend/_public"))
     .filter(Planify(companyPlan.intent))
     .filter(Planify(computerPlan.intent))
     .filter(Login).run()

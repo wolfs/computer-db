@@ -4,6 +4,7 @@ import org.json4s._
 import org.json4s.native.JsonMethods._
 import org.json4s.scalaz.JsonScalaz._
 import org.json4s.JsonAST.JValue
+import language.implicitConversions
 
 /**
  * @author wolfs
