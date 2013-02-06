@@ -38,10 +38,7 @@ object ExtractUserData {
   def unapply[T](r: HttpRequest[T]) = r match {
       case Cookies(cookies) => {
         val cookie = cookies(UsernameCookie.name)
-        cookie match {
-          case Some(Cookie(_, json, _, _, _, _, _, _)) => UsernameCookie.decode(json)
-          case _ => None
-        }
+        cookie flatMap { cookie => UsernameCookie.decode(cookie.value) }
       }
   }
   def apply[T](r: HttpRequest[T]) = unapply(r)
