@@ -19,14 +19,6 @@ import scala.xml.NodeSeq
  */
 object AngularApplication extends Controller with Secured {
 
-  def index = Action { implicit request =>
-    Ok(html.angular.main(Html.empty))
-  }
-
-  def list = Action { implicit request =>
-    Ok(html.angular.list())
-  }
-
   def check(username: String, password: String) = {
     (username == "admin" && password == "1234")
   }
