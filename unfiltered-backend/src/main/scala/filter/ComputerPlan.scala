@@ -1,7 +1,6 @@
 package filter
 
-import dal.DAL
-import util.PrefixSeg
+import util._
 import slick.session.Session
 import unfiltered.filter.Plan
 import unfiltered.request.{GET, Path, Method}
@@ -81,29 +80,23 @@ trait ComputerResource { self: RepositoryComponent with Transactional with Datab
       }
       case _ => Pass
     } (req)
-    case req@Path(Seg(idString :: Nil)) => { implicit session: Session =>
-      try {
-        val id = idString.toLong;
-
-        auth {
-          case GET(_) => {
-            val computer = Computers.findById(id)
-            computer.map(c => ResponseString(c.toJson.shows)).getOrElse(NotFound)
+    case req@Path(Seg(LongPart(id) :: Nil)) => { implicit session: Session =>
+      auth {
+        case GET(_) => {
+          val computer = Computers.findById(id)
+          computer.map(c => ResponseString(c.toJson.shows)).getOrElse(NotFound)
+        }
+        case PUT(_) => {
+          val computerResult = Body.string(req).asJson.convertTo[Computer]
+          badResultOnError(computerResult){ computer =>
+              notFoundOrNoContent(Computers.update(computer.copy(id = Some(id))))
           }
-          case PUT(_) => {
-            val computerResult = Body.string(req).asJson.convertTo[Computer]
-            badResultOnError(computerResult){ computer =>
-                notFoundOrNoContent(Computers.update(computer.copy(id = Some(id))))
-            }
-          }
-          case DELETE(_) => {
-            notFoundOrNoContent(Computers.delete(id))
-          }
-          case _ => Pass
-        } (req)
-      } catch {
-        case e: NumberFormatException => NotFound
-      }
+        }
+        case DELETE(_) => {
+          notFoundOrNoContent(Computers.delete(id))
+        }
+        case _ => Pass
+      } (req)
     }
     case _ => Pass
     }

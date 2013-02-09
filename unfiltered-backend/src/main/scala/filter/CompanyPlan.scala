@@ -1,6 +1,5 @@
 package filter
 
-import dal.DAL
 import unfiltered.filter.Plan
 import unfiltered.request.{GET, Path}
 import unfiltered.response.{Pass, ResponseString}
