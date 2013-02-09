@@ -30,7 +30,7 @@ trait CompanyResource { self: RepositoryComponent with Transactional with Databa
     def intent: Cycle.Intent[Any, Any] = auth {
       case GET(Path(Seg(Nil))) => { implicit session: Session =>
         val companies = Companies.list
-        ResponseString(companies.toJson.shows)
+        Json(companies.toJson)
       }
     }
   }

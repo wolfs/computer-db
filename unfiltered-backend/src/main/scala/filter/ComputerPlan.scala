@@ -1,20 +1,16 @@
 package filter
 
 import util._
-import slick.session.Session
 import unfiltered.filter.Plan
-import unfiltered.request.{GET, Path, Method}
+import unfiltered.request.{GET, Path, Method, Params}
 import unfiltered.response._
-import unfiltered.request.Params
 import scala.util.control.Exception.allCatch
 import unfiltered.request.Body
 import unfiltered.request.PUT
 import models.Computer
 import unfiltered.request.DELETE
 import unfiltered.request.POST
-import scala.Some
 import models.Computer
-import unfiltered.response.ResponseString
 import scalaz._
 import Scalaz._
 import org.json4s._
@@ -23,10 +19,8 @@ import org.json4s.JsonDSL._
 import org.json4s.scalaz.JsonScalaz._
 import org.json4s.native.scalaz._
 import _root_.util.json._
-import scala.slick.session.Database
 import unfiltered.Cycle
 import Authentication._
-import dal.SlickDatabaseAccess
 import models.RepositoryComponent
 import models.DatabaseAccess
 
@@ -69,10 +63,10 @@ trait ComputerResource { self: RepositoryComponent with Transactional with Datab
             filter = filterString,
             orderBy = sort,
             descending = desc)
-        ResponseString(computers.toJson.shows)
+        Json(computers.toJson)
       }
       case POST(_) => {  implicit session: Session =>
-        val computerResult = Body.string(req).asJson.convertTo[Computer]
+        val computerResult = JsonBody[Computer](req)
         badResultOnError(computerResult){ computer =>
             val insertedComputer = Computers.insert(computer)
             Created ~> Location(s"/api/computers/${insertedComputer.id.get}")
@@ -84,10 +78,10 @@ trait ComputerResource { self: RepositoryComponent with Transactional with Datab
       auth {
         case GET(_) => {
           val computer = Computers.findById(id)
-          computer.map(c => ResponseString(c.toJson.shows)).getOrElse(NotFound)
+          computer.map(c => Json(c.toJson)).getOrElse(NotFound)
         }
         case PUT(_) => {
-          val computerResult = Body.string(req).asJson.convertTo[Computer]
+          val computerResult = JsonBody[Computer](req)
           badResultOnError(computerResult){ computer =>
               notFoundOrNoContent(Computers.update(computer.copy(id = Some(id))))
           }
