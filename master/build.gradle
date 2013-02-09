@@ -43,8 +43,9 @@ project(':unfiltered-backend') {
     dependencies {
         compile project(':model')
         compile project(':slick-persistence')
-        compile "net.databinder:unfiltered-filter_${scalaMajorVersion}:0.6.5"
-        compile "net.databinder:unfiltered-jetty_${scalaMajorVersion}:0.6.5"
+        compile "net.databinder:unfiltered-filter_${scalaMajorVersion}:0.6.7"
+        compile "net.databinder:unfiltered-jetty_${scalaMajorVersion}:0.6.7"
+        compile "net.databinder:unfiltered-json_${scalaMajorVersion}:0.6.7"
     }
 }
 
