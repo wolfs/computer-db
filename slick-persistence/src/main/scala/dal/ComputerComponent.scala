@@ -7,14 +7,24 @@ import scala.slick.direct.AnnotationMapper.table
 import scala.slick.driver.ExtendedProfile
 import scala.slick.session.Session
 import util.SequenceId
+import scala.slick.session.Database
 
 trait Profile {
   val profile: ExtendedProfile
 }
 
-class DAL(override val profile: ExtendedProfile) extends ComputerComponent with Profile
+class SlickDal(override val profile: ExtendedProfile, override val db: Database) extends SlickRepositoryComponent with Profile with SlickDatabaseAccess
+trait SlickDatabaseAccess extends DatabaseAccess {
+  type Session = scala.slick.session.Session
 
-trait ComputerComponent { self: Profile =>
+  def withTransaction[T](f: Session => T): T = {
+      db.withTransaction(f)
+  }
+  def db: Database
+}
+
+trait SlickRepositoryComponent extends RepositoryComponent { self: Profile with SlickDatabaseAccess =>
+
   import profile.simple._
 
   object TypeMapper {
@@ -27,7 +37,7 @@ trait ComputerComponent { self: Profile =>
 
   }
 
-  object Companies extends Table[Company]("COMPANY") with SequenceId {
+  object Companies extends Table[Company]("COMPANY") with SequenceId with Companies {
     def id = column[Option[Long]]("ID", O.PrimaryKey)
     def name = column[String]("NAME")
     def * = id ~ name <> (Company.apply _, Company.unapply _)
@@ -61,7 +71,7 @@ trait ComputerComponent { self: Profile =>
     }
   }
 
-  object Computers extends Table[Computer]("COMPUTER") with SequenceId {
+  object Computers extends Table[Computer]("COMPUTER") with SequenceId with Computers {
     import TypeMapper._
     def id = column[Option[Long]]("ID", O.PrimaryKey)
     def name = column[String]("NAME")

@@ -13,6 +13,7 @@ import unfiltered.Cookie
 import org.joda.time.DateTime
 import org.json4s.ext.DateTimeSerializer._
 import org.joda.time.Minutes
+import language.reflectiveCalls
 
 case class UserData(username: String, expiryDate: DateTime)
 
