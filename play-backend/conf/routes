@@ -2,11 +2,7 @@
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
 
-# Default path will just redirect to the computer list
-GET     /                           controllers.Application.index
-
 # Computers list (look at the default values for pagination parameters)
-GET     /computers                  controllers.Application.list(p:Int ?= 0, s:Int ?= 2, f ?= "")
 GET     /api/computers              controllers.Computers.list(p:Int ?= 0, s:Int ?= 2, f ?= "")
 GET     /api/computers/:id          controllers.Computers.find(id:Long)
 POST    /api/computers              controllers.Computers.save
@@ -18,22 +14,7 @@ DELETE  /api/login/:user            controllers.AngularApplication.logout(user: 
 
 GET     /api/companies              controllers.Companies.list
 
-# Add computer
-GET     /computers/new              controllers.Application.create
-POST    /computers                  controllers.Application.save
-
-# Edit existing computer
-GET     /computers/:id              controllers.Application.edit(id:Long)
-POST    /computers/:id              controllers.Application.update(id:Long)
-
-# Delete a computer
-POST    /computers/:id/delete       controllers.Application.delete(id:Long)
-
-# Javascript routing
-GET     /assets/javascripts/routes          controllers.Application.javascriptRoutes
-
-# Map static resources from the /public folder to the /assets URL path
-GET     /assets/*file               controllers.Assets.at(path="/public", file)
-
-GET     /companyJson                controllers.Companies.companyJson
+# Map static resources from the /public folder to the / URL path
+GET     /*file                      controllers.Assets.at(path="/public", file)
+GET     /                           controllers.Assets.at(path="/public", file="index.html")
 

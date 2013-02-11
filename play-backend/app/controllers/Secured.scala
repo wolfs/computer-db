@@ -11,31 +11,31 @@ trait Secured {
 
   def onUnauthorized(request: RequestHeader) = Results.Unauthorized
 
-  def withAuth(f: String => Request[AnyContent] => Result): Action[(Action[AnyContent], AnyContent)] = withAuth(BodyParsers.parse.anyContent)(f)
+  def withAuth(f: String => Request[AnyContent] => Result): EssentialAction = withAuth(BodyParsers.parse.anyContent)(f)
 
-  def withAuth[A](bodyParser : BodyParser[A])(f : String => Request[A] => Result): Action[(Action[A], A)] =
+  def withAuth[A](bodyParser : BodyParser[A])(f : String => Request[A] => Result): EssentialAction =
     withAuthAndResult(bodyParser)(f)(addUsernameCookie)
 
-  def withAuthAndResult[A](bodyParser : BodyParser[A])(f : String => Request[A] => Result)(resultAction: (String, Result) => Result): Action[(Action[A], A)] = {
+  def withAuthAndResult[A](bodyParser : BodyParser[A])(f : String => Request[A] => Result)(resultAction: (String, Result) => Result): EssentialAction = {
     Security.Authenticated(username, onUnauthorized) { user =>
       Action(bodyParser)(request => resultAction(user, f(user)(request)))
     }
   }
 
-  def withAuthAndLogout[A](bodyParser : BodyParser[A])(f : String => Request[A] => Result): Action[(Action[A], A)] =
+  def withAuthAndLogout[A](bodyParser : BodyParser[A])(f : String => Request[A] => Result): EssentialAction =
     withAuthAndResult(bodyParser)(f) { (user, result) =>
       result.discardingCookies(UsernameCookie.discard)
     }
 
-  def withAuthAndLogout(f : String => Request[AnyContent] => Result): Action[(Action[AnyContent], AnyContent)] =
+  def withAuthAndLogout(f : String => Request[AnyContent] => Result): EssentialAction =
     withAuthAndLogout(BodyParsers.parse.anyContent)(f)
 
   def addUsernameCookie(user: String, result: Result): Result = {
     result.withCookies(UsernameCookie.encodeAsCookie(Some(Username(user))))
   }
 
-  def authenticated[A](bodyParser : BodyParser[A])(f : Request[A] => Result): Action[(Action[A], A)] = withAuth(bodyParser)((user) => f)
-  def authenticated(f : Request[AnyContent] => Result): Action[(Action[AnyContent], AnyContent)] = withAuth((user) => f)
-  def authenticated(f :  => Result): Action[(Action[AnyContent], AnyContent)] = authenticated(_ => f)
+  def authenticated[A](bodyParser : BodyParser[A])(f : Request[A] => Result): EssentialAction = withAuth(bodyParser)((user) => f)
+  def authenticated(f : Request[AnyContent] => Result): EssentialAction = withAuth((user) => f)
+  def authenticated(f :  => Result): EssentialAction = authenticated(_ => f)
 
 }

@@ -21,7 +21,7 @@ object Computers extends Controller with Secured {
     import Implicits._
     Json.fromJson[Computer](request.body).asOpt.map { computer =>
       val id = Computer.insert(computer)
-      Created.withHeaders(LOCATION -> routes.Application.edit(id).toString())
+      Created.withHeaders(LOCATION -> routes.Computers.find(id).toString())
     }.getOrElse(BadRequest("Json did not validate"))
   }
 

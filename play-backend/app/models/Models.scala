@@ -39,18 +39,18 @@ object Implicits {
   //  implicit val companyReads: Reads[Company] = Json.reads[Company]
   implicit val companyWrites: Writes[Company] = Json.writes[Company]
   implicit val computerReads: Reads[Computer] = (
-    pkFromOption((__ \ "id").readOpt[Long]) and
+    pkFromOption((__ \ "id").readNullable[Long]) and
     (__ \ "name").read[String] and
-    (__ \ "introduced").readOpt[Date] and
-    (__ \ "discontinued").readOpt[Date] and
-    (__ \ "companyId").readOpt[Long]
+    (__ \ "introduced").readNullable[Date] and
+    (__ \ "discontinued").readNullable[Date] and
+    (__ \ "companyId").readNullable[Long]
     ).apply(Computer.apply _)
   implicit val computerWrites: Writes[Computer] = (
-    pkToOption((__ \ "id").writeOpt[Long]) and
+    pkToOption((__ \ "id").writeNullable[Long]) and
     (__ \ "name").write[String] and
-    (__ \ "introduced").writeOpt(dateWrites("yyyy-MM-dd")) and
-    (__ \ "discontinued").writeOpt(dateWrites("yyyy-MM-dd")) and
-    (__ \ "companyId").writeOpt[Long]
+    (__ \ "introduced").writeNullable(dateWrites("yyyy-MM-dd")) and
+    (__ \ "discontinued").writeNullable(dateWrites("yyyy-MM-dd")) and
+    (__ \ "companyId").writeNullable[Long]
     )(unlift(Computer.unapply _))
   implicit val pairWrites: Writes[(Computer, Option[Company])] = (
     (__ \ "computer").write[Computer] and

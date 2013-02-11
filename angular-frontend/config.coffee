@@ -4,7 +4,7 @@ exports.config =
     definition: false
     wrapper: false
   paths:
-    public: '_public'
+    public: 'target/generated-web/public'
   files:
     javascripts:
       joinTo:
@@ -39,10 +39,6 @@ exports.config =
         'css/app.css': /^(app|vendor)/
     templates:
       joinTo: 'js/templates.js'
-
-  plugins:
-    jade:
-      pretty: yes # Adds pretty-indentation whitespaces to output (false by default)
 
   # Enable or disable minifying of result js / css files.
   # minify: true

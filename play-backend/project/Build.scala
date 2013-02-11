@@ -11,10 +11,12 @@ object ApplicationBuild extends Build {
     	jdbc,
     	anorm
     )
+    
+    val angularFrontend = Project("angular-frontend", file("../angular-frontend"))
 
     val main = play.Project(appName, appVersion, appDependencies).settings(
       scalaVersion := "2.10.0"      // Add your own project settings here
-    )
+    ).dependsOn(angularFrontend)
 
 
 }
