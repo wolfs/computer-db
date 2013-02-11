@@ -27,11 +27,11 @@ trait CompanyResource { self: RepositoryComponent with Transactional with Databa
 
     val Seg = PrefixSeg("api", "companies")
 
-    def intent: Cycle.Intent[Any, Any] = auth {
+    def intent: Cycle.Intent[Any, Any] = unfiltered.kit.GZip { auth {
       case GET(Path(Seg(Nil))) => { implicit session: Session =>
         val companies = Companies.list
         Json(companies.toJson)
       }
-    }
+    }}
   }
 }

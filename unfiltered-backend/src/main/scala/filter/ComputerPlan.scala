@@ -49,7 +49,7 @@ trait ComputerResource { self: RepositoryComponent with Transactional with Datab
     object Sort extends Params.Extract("s", Params.first ~> Params.int)
     object Descending extends Params.Extract("d", Params.first ~> boolean)
 
-    def intent: Cycle.Intent[Any, Any] = {
+    def intent: Cycle.Intent[Any, Any] = unfiltered.kit.GZip {
     case req@Path(Seg(Nil)) => auth {
       case GET(_) => { implicit session: Session =>
         val Params(params) = req

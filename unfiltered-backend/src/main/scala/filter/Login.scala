@@ -25,7 +25,7 @@ import unfiltered.response.Unauthorized
 object Login extends Plan {
   val Seg = PrefixSeg("api", "login")
 
-  def intent: Plan.Intent = {
+  def intent: Plan.Intent = unfiltered.kit.GZip {
     case req@Path(Seg(idString :: Nil)) => req match {
       case POST(_) => NoContent ~> SetCookies(
           UsernameCookie.encode(UserData(idString, DateTime.now)))
