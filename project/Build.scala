@@ -9,16 +9,17 @@ object ApplicationBuild extends Build {
 
     val appDependencies = Seq(
     	jdbc,
-    	anorm
+    	anorm,
+        filters
     )
     
     val angularFrontend = Project("angular-frontend", file("angular-frontend")).settings(
       scalaVersion := "2.10.0"      // Add your own project settings here
     )
 
-    override def settings = super.settings ++ com.typesafe.sbtidea.SbtIdeaPlugin.ideaSettings
+    override def settings = super.settings ++ com.typesafe.sbtidea.SbtIdeaPlugin.ideaSettings ++ Seq(scalaVersion := "2.10.0")
 
-    val main = play.Project(appName, appVersion, appDependencies, path = file("play-backend")).settings(
+    val main = play.Project("play-backend", appVersion, appDependencies, path = file("play-backend")).settings(
       scalaVersion := "2.10.0"      // Add your own project settings here
     ).dependsOn(angularFrontend)
 
