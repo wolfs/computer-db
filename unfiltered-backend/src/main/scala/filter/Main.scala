@@ -10,22 +10,9 @@ import java.io.File
 import java.net.URL
 import unfiltered.filter.Planify
 import dal.SlickDal
+import dal.H2DbAccess
 
-object Main  {
-  val jdbcUrl = "jdbc:h2:mem:computerdb;DB_CLOSE_DELAY=-1"
-  val jdbcDriver = "org.h2.Driver"
-  val jdbcUser = ""
-  val jdbcPassword = ""
-
-  lazy val dataSource = {
-    val ds = new BoneCPDataSource()
-    ds.setDriverClass(jdbcDriver)
-    ds.setJdbcUrl(jdbcUrl)
-    ds.setUsername(jdbcUser)
-    ds.setPassword(jdbcPassword)
-    ds
-  }
-  lazy val db = Database.forDataSource(dataSource)
+object Main extends H2DbAccess {
 
   lazy val app = new SlickDal(H2Driver, db)
     with Transactional
@@ -34,9 +21,7 @@ object Main  {
 
 
   def main(args: Array[String]) {
-    val flyway = new Flyway();
-    flyway.setDataSource(dataSource)
-    flyway.migrate()
+    migrate
     val here = new File("here")
     val server = unfiltered.jetty.Http.local(53333)
     server.underlying.setSendDateHeader(true)
