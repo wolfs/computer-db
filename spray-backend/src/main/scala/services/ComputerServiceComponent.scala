@@ -2,7 +2,8 @@ package services
 
 import akka.actor.Actor
 import spray.routing._
-import spray.http._
+import spray.http.{DateTime => SDateTime, _}
+import StatusCodes._
 import MediaTypes._
 import models.DatabaseAccess
 import util.Transactional
@@ -11,36 +12,50 @@ import models.MyJsonProtocol._
 import _root_.util.json._
 import util.Json4sSupport
 import models.Computer
-
+import util.UsernameCookie
+import util.UserData
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
+import shapeless._
+import util.CookieAuthentication
+import spray.routing.directives.CompletionMagnet
+import util.MyFileAndResourceDirectives
 
 
 trait ComputerServiceComponent { self: RepositoryComponent with DatabaseAccess with Transactional =>
 
-  class ComputerServiceActor extends Actor with HttpServiceActor with CompanyService with ComputerService {
-    def receive = runRoute(companyRoute ~ computerRoute ~
+  class ComputerServiceActor extends Actor
+    with HttpServiceActor
+    with CompanyService
+    with ComputerService
+    with LoginService
+    with MyFileAndResourceDirectives {
+    def receive = runRoute(companyRoute ~ computerRoute ~ loginRoute ~
     get {
       getFromDirectory("../angular-frontend/target/generated-web/public")
     })
   }
 
 
-  trait CompanyService extends Directives with Json4sSupport {
+  trait CompanyService extends Directives with CookieAuthentication with Json4sSupport {
 
     val companyRoute =
       path("api/companies") {
         get {
-          complete {
-            withTransaction { implicit session =>
-              Companies.list
+          cookieAuth { userData =>
+            complete {
+              withTransaction { implicit session =>
+                Companies.list
+              }
             }
           }
         }
       }
   }
 
-  trait ComputerService extends Directives with Json4sSupport {
+  trait ComputerService extends Directives  with CookieAuthentication with Json4sSupport {
     val computerRoute =
-      pathPrefix("api/computers") {
+      (pathPrefix("api/computers") & cookieAuth) { userData =>
         path(Slash) {
           get {
             parameters(
@@ -72,7 +87,8 @@ trait ComputerServiceComponent { self: RepositoryComponent with DatabaseAccess w
           get {
             complete {
               withTransaction { implicit session =>
-                Computers.findById(id)
+                Computers.findById(id).map(comp => CompletionMagnet.fromObject(comp)).
+                getOrElse(NotFound)
               }
             }
           } ~

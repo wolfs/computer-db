@@ -22,12 +22,22 @@ trait Json4sSupport {
       result.fold(e => Left(MalformedContent(e.toString)), s => Right(s))
   }
 
+  implicit def sprayJsonParser =
+    new SimpleUnmarshaller[JValue] {
+    val canUnmarshalFrom = Seq(ContentTypeRange(`application/json`))
+    def unmarshal(entity: HttpEntity) = {
+        protect(parse(entity.asString))
+    }
+  }
+
   implicit def sprayJsonUnmarshaller[T :JSONR] =
     new SimpleUnmarshaller[T] {
     val canUnmarshalFrom = Seq(ContentTypeRange(`application/json`))
     def unmarshal(entity: HttpEntity) = {
-        val json = parse(entity.asString)
-        resultToEither(jsonReader[T].read(json))
+      for {
+        json <- sprayJsonParser(entity)
+        entity <- resultToEither(jsonReader[T].read(json))
+      } yield { entity }
     }
   }
 

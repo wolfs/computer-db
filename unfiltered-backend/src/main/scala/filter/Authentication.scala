@@ -9,6 +9,7 @@ import org.joda.time.DateTime
 import unfiltered.filter.Plan
 import javax.servlet.http.HttpServletResponse
 import language.reflectiveCalls
+import _root_.util.UserData
 
 object Authentication {
   type Intent = Cycle.Intent[Any,Any]

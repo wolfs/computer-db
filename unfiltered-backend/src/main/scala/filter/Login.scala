@@ -21,6 +21,7 @@ import javax.servlet.http.HttpServletRequest
 import unfiltered.request.HttpRequest
 import unfiltered.response.ResponseString
 import unfiltered.response.Unauthorized
+import _root_.util.UserData
 
 object Login extends Plan {
   val Seg = PrefixSeg("api", "login")

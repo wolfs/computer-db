@@ -1,10 +1,12 @@
-package filter
+package util
 
+import spray.http.{DateTime => SprayDateTime}
 import org.joda.time.DateTime
-import _root_.util.AbstractUsernameCookie
+
 
 object UsernameCookie extends AbstractUsernameCookie {
-  type Cookie = unfiltered.Cookie
+  type Cookie = spray.http.HttpCookie
+
   override def Cookie(
     name: String,
     content: String,
@@ -15,5 +17,5 @@ object UsernameCookie extends AbstractUsernameCookie {
     secure: Option[Boolean] = None,
     httpOnly: Boolean = false,
     extension: Option[String] = None
-  ): Cookie = unfiltered.Cookie(name, content, domain, path, maxAge, secure, httpOnly)
+  ): Cookie = spray.http.HttpCookie(name, content, SprayDateTime.fromIsoDateTimeString(expires.toString()), maxAge.map(_.toLong), domain, path, secure.getOrElse(false), httpOnly, extension)
 }
