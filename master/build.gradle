@@ -63,6 +63,23 @@ project(':spray-backend') {
     }
 }
 
+project(':scalatra-backend') {
+    apply plugin: 'application'
+    mainClassName = 'boot.ScalatraBoot'
+
+    ext.scalatraVersion = '2.2.0'
+
+    dependencies {
+        compile project(':model')
+        compile project(':slick-persistence')
+        compile "org.scalatra:scalatra_${scalaMajorVersion}:${scalatraVersion}"
+        compile "org.scalatra:scalatra-json_${scalaMajorVersion}:${scalatraVersion}"
+        compile "org.eclipse.jetty:jetty-webapp:8.1.8.v20121106"
+        compile "org.eclipse.jetty.orbit:javax.servlet:3.0.0.v201112011016"
+        testCompile "org.scalatra:scalatra-specs2_${scalaMajorVersion}:${scalatraVersion}"
+    }
+}
+
 project(':slick-persistence') {
     dependencies {
         compile project(':model')
@@ -80,3 +97,4 @@ project(':model') {
         compile "org.json4s:json4s-ext_${scalaMajorVersion}:3.1.0"
     }
 }
+
