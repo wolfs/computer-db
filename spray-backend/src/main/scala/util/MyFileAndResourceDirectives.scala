@@ -37,22 +37,22 @@ trait MyFileAndResourceDirectives extends FileAndResourceDirectives {
                   refFactory: ActorRefFactory): Route =
     get {
       optionalHeaderValueByName("If-Modified-Since") { value =>
-      detachTo(singleRequestServiceActor) {
-        val lastModified = file.lastModified
-        val modifiedSince = value.map(RFC1123Pattern.parseDateTime(_).getMillis < lastModified) getOrElse(true)
-        if (!modifiedSince) {
-          complete(NotModified)
-        } else {
-          respondWithLastModifiedHeader(file.lastModified) {
-            if (file.isFile && file.canRead) {
-              implicit val bufferMarshaller = BasicMarshallers.byteArrayMarshaller(resolver(file.getName))
-              if (0 < settings.FileChunkingThresholdSize && settings.FileChunkingThresholdSize <= file.length)
-                complete(file.toByteArrayStream(settings.FileChunkingChunkSize.toInt))
-              else complete(FileUtils.readAllBytes(file))
-            } else reject
+        detachTo(singleRequestServiceActor) {
+          val lastModified = file.lastModified
+          val modifiedSince = value.map(RFC1123Pattern.parseDateTime(_).getMillis < lastModified) getOrElse(true)
+          if (!modifiedSince) {
+            complete(NotModified)
+          } else {
+            respondWithLastModifiedHeader(file.lastModified) {
+              if (file.isFile && file.canRead) {
+                implicit val bufferMarshaller = BasicMarshallers.byteArrayMarshaller(resolver(file.getName))
+                if (0 < settings.FileChunkingThresholdSize && settings.FileChunkingThresholdSize <= file.length)
+                  complete(file.toByteArrayStream(settings.FileChunkingChunkSize.toInt))
+                else complete(FileUtils.readAllBytes(file))
+              } else reject
+            }
           }
         }
-      }
       }
     }
 }
