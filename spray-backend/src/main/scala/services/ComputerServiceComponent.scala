@@ -20,6 +20,7 @@ import shapeless._
 import util.CookieAuthentication
 import spray.routing.directives.CompletionMagnet
 import util.MyFileAndResourceDirectives
+import spray.http.HttpHeaders.Location
 
 
 trait ComputerServiceComponent { self: RepositoryComponent with DatabaseAccess with Transactional =>
@@ -54,6 +55,15 @@ trait ComputerServiceComponent { self: RepositoryComponent with DatabaseAccess w
   }
 
   trait ComputerService extends Directives  with CookieAuthentication with Json4sSupport {
+
+    def notFoundOrNoContent(num: Int): CompletionMagnet = {
+      if (num == 0) {
+        NotFound
+      } else {
+        NoContent
+      }
+    }
+
     val computerRoute =
       (pathPrefix("api/computers") & cookieAuth) { userData =>
         path(Slash) {
@@ -78,7 +88,8 @@ trait ComputerServiceComponent { self: RepositoryComponent with DatabaseAccess w
             entity(as[Computer]) { computer =>
               complete {
                 withTransaction { implicit session =>
-                  Computers.insert(computer)
+                  val id = Computers.insert(computer).id.get
+                  HttpResponse(status = Created, headers = List(Location(s"/api/computers/$id")))
                 }
               }
             }
@@ -87,7 +98,7 @@ trait ComputerServiceComponent { self: RepositoryComponent with DatabaseAccess w
           get {
             complete {
               withTransaction { implicit session =>
-                Computers.findById(id).map(comp => CompletionMagnet.fromObject(comp)).
+                Computers.findById(id).map[CompletionMagnet](comp => comp).
                 getOrElse(NotFound)
               }
             }
@@ -95,14 +106,16 @@ trait ComputerServiceComponent { self: RepositoryComponent with DatabaseAccess w
           put {
             entity(as[Computer]) { computer =>
               complete { withTransaction { implicit session =>
-                Computers.update(computer.copy(id = Some(id)))
+                notFoundOrNoContent(
+                    Computers.update(computer.copy(id = Some(id)))
+                )
               }}
             }
           } ~
           delete {
             complete {
               withTransaction { implicit session =>
-                Computers.delete(id)
+                notFoundOrNoContent(Computers.delete(id))
               }
             }
           }
