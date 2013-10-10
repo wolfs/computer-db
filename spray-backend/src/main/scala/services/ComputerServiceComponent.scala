@@ -23,10 +23,9 @@ import util.MyFileAndResourceDirectives
 import spray.http.HttpHeaders.Location
 
 
-trait ComputerServiceComponent { self: RepositoryComponent with DatabaseAccess with Transactional =>
+trait ComputerServiceComponent extends CompanyResource with ComputerResource { self: RepositoryComponent with DatabaseAccess with Transactional =>
 
-  class ComputerServiceActor extends Actor
-    with HttpServiceActor
+  class ComputerServiceActor extends HttpServiceActor
     with CompanyService
     with ComputerService
     with LoginService
@@ -37,89 +36,4 @@ trait ComputerServiceComponent { self: RepositoryComponent with DatabaseAccess w
     })
   }
 
-
-  trait CompanyService extends Directives with CookieAuthentication with Json4sSupport {
-
-    val companyRoute =
-      path("api/companies") {
-        get {
-          cookieAuth { userData =>
-            complete {
-              withTransaction { implicit session =>
-                Companies.list
-              }
-            }
-          }
-        }
-      }
-  }
-
-  trait ComputerService extends Directives  with CookieAuthentication with Json4sSupport {
-
-    def notFoundOrNoContent(num: Int): CompletionMagnet = {
-      if (num == 0) {
-        NotFound
-      } else {
-        NoContent
-      }
-    }
-
-    val computerRoute =
-      (pathPrefix("api/computers") & cookieAuth) { userData =>
-        path(Slash) {
-          get {
-            parameters(
-                'p.as[Option[Int]],
-                'f.as[Option[String]],
-                's.as[Option[Int]],
-                'd.as[Option[Boolean]]) { (p,f,s,d) =>
-              complete {
-                withTransaction { implicit session =>
-                  Computers.list(
-                      page = p.getOrElse(0),
-                      filter = s"%${f.getOrElse("")}%",
-                      orderBy = s.getOrElse(1),
-                      descending = d.getOrElse(false))
-                }
-              }
-            }
-          } ~
-          post {
-            entity(as[Computer]) { computer =>
-              complete {
-                withTransaction { implicit session =>
-                  val id = Computers.insert(computer).id.get
-                  HttpResponse(status = Created, headers = List(Location(s"/api/computers/$id")))
-                }
-              }
-            }
-          }} ~
-        path(LongNumber) { id =>
-          get {
-            complete {
-              withTransaction { implicit session =>
-                Computers.findById(id).map[CompletionMagnet](comp => comp).
-                getOrElse(NotFound)
-              }
-            }
-          } ~
-          put {
-            entity(as[Computer]) { computer =>
-              complete { withTransaction { implicit session =>
-                notFoundOrNoContent(
-                    Computers.update(computer.copy(id = Some(id)))
-                )
-              }}
-            }
-          } ~
-          delete {
-            complete {
-              withTransaction { implicit session =>
-                notFoundOrNoContent(Computers.delete(id))
-              }
-            }
-          }
-        }
-    }
-  }
 }

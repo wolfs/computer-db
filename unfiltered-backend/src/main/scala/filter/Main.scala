@@ -28,7 +28,7 @@ object Main extends H2DbAccess {
     server.resources(new URL(here.toURI().toURL(),"../angular-frontend/target/generated-web/public"))
     .filter(Planify(app.CompanyPlan.intent))
     .filter(Planify(app.ComputerPlan.intent))
-    .filter(Login).run()
+    .filter(LoginPlan).run()
   }
 
 }

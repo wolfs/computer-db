@@ -40,7 +40,7 @@ trait AbstractUsernameCookie {
     }
   }
 
-    implicit val userDataFormat: JSON[UserData] = new JSON[UserData] {
+  implicit val userDataFormat: JSON[UserData] = new JSON[UserData] {
     def read(json: JValue) = (UserData.apply _).applyJSON(
         field[String]("username"),
         field[DateTime]("expiryDate"))(json)

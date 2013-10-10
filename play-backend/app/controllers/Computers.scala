@@ -11,13 +11,13 @@ import views.html
 /**
  * @author wolfs
  */
-object Computers extends Controller with Secured {
-  def list(page: Int, orderBy: Int, filter: String) = authenticated { implicit Request =>
+object Computers extends Controller {
+  def list(page: Int, orderBy: Int, filter: String) = AuthenticatedAction { implicit Request =>
     import Implicits._
     Ok(Json.toJson(Computer.list(page = page, orderBy = orderBy, filter = ("%"+filter+"%"))))
   }
 
-  def save = authenticated(BodyParsers.parse.json) { implicit request =>
+  def save = AuthenticatedAction(BodyParsers.parse.json) { implicit request =>
     import Implicits._
     Json.fromJson[Computer](request.body).asOpt.map { computer =>
       val id = Computer.insert(computer)
@@ -25,7 +25,7 @@ object Computers extends Controller with Secured {
     }.getOrElse(BadRequest("Json did not validate"))
   }
 
-  def update(id: Long) = authenticated(BodyParsers.parse.json) { implicit request =>
+  def update(id: Long) = AuthenticatedAction(BodyParsers.parse.json) { implicit request =>
     import Implicits._
     Json.fromJson[Computer](request.body).asOpt.map { computer =>
       Computer.update(id, computer)
@@ -33,7 +33,7 @@ object Computers extends Controller with Secured {
     }.getOrElse(BadRequest("Json did not validate"))
   }
 
-  def find(id: Long) = authenticated { implicit request =>
+  def find(id: Long) = AuthenticatedAction { implicit request =>
     import Implicits._
     Computer.findById(id).
       map { computer: Computer => Ok(Json.toJson(computer)) }.getOrElse {
@@ -41,7 +41,7 @@ object Computers extends Controller with Secured {
     }
   }
 
-  def delete(id: Long) = authenticated { implicit request =>
+  def delete(id: Long) = AuthenticatedAction { implicit request =>
     Computer.delete(id)
     NoContent
   }

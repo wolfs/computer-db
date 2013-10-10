@@ -102,6 +102,11 @@ trait SlickRepositoryComponent extends RepositoryComponent { self: Profile with 
 
     lazy val allQuery = Query(Computers)
 
+    lazy val countWithFilter = for {
+      filter <- Parameters[String]
+      c <- Computers if c.name like filter
+    } yield c.id.count
+      
     def findById(id: Long)(implicit db: Session): Option[Computer] = {
       idQuery(id).firstOption
     }
@@ -146,7 +151,7 @@ trait SlickRepositoryComponent extends RepositoryComponent { self: Profile with 
       val computers = for {
         (computer, company) <- sortedQueryWithOffset
       } yield (computer, company.*?)
-      val total = (for (c <- Computers if c.name like filter) yield (c.length)).first
+      val total = countWithFilter(filter).first
       Page(computers.list, page, offset, total)
     }
   }

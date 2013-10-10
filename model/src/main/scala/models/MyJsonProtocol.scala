@@ -17,7 +17,7 @@ object MyJsonProtocol {
 
     def read(json: JValue) = json match {
       case JArray(xs) =>
-        xs.map(fromJSON[A]).sequence[({type λ[t] = ValidationNEL[Error, t]})#λ, A]
+        xs.map(fromJSON[A]).sequence[({type λ[t] = ValidationNel[Error, t]})#λ, A]
       case x => UnexpectedJSONError(x, classOf[JArray]).failureNel
     }
   }

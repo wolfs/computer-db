@@ -18,13 +18,6 @@ import spray.http.HttpCookie
 import spray.http.HttpHeader
 
 trait CookieAuthentication extends SecurityDirectives {
-  case class `Set-Cookie`(cookie: HttpCookie) extends HttpHeader {
-    def name = "Set-Cookie"
-    def lowercaseName = "set-cookie"
-    def value = cookie.value.replaceFirst("=\"([^\"]+)\"", "=$1")
-  }
-
-  def mySetCookie(cookie: HttpCookie): Directive0 = respondWithHeader(`Set-Cookie`(cookie))
 
   def cookieAuthBase: Directive[UserData :: HNil] = {
     cancelAllRejections(ofType[MissingCookieRejection]).hflatMap {
@@ -37,7 +30,7 @@ trait CookieAuthentication extends SecurityDirectives {
                 userData <- UsernameCookie.decode(cookie.content)
               } yield {
                 Right(userData)
-              }) getOrElse Left(AuthenticationFailedRejection("hier"))
+              }) getOrElse Left(AuthenticationFailedRejection("Authentication Cookie not accepted"))
             )
           )
         }
@@ -47,7 +40,7 @@ trait CookieAuthentication extends SecurityDirectives {
 
   def cookieAuth: Directive[UserData :: HNil] = {
     cookieAuthBase flatMap { userData =>
-      mySetCookie(UsernameCookie.encode(userData.copy(expiryDate = DateTime.now))) & provide(userData)
+      setCookie(UsernameCookie.encode(userData.copy(expiryDate = DateTime.now))) & provide(userData)
     }
   }
   def cookieAuthDiscardingCookie: Directive[UserData :: HNil] = {

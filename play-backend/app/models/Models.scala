@@ -36,7 +36,6 @@ object Implicits {
   implicit def pkReads[T](implicit fmt: Reads[T]): Reads[Pk[T]] = new Reads[Pk[T]] {
     def reads(json: JsValue) = fmt.reads(json).fold( e => JsSuccess(NotAssigned), v => JsSuccess(Id(v)))
   }
-  //  implicit val companyReads: Reads[Company] = Json.reads[Company]
   implicit val companyWrites: Writes[Company] = Json.writes[Company]
   implicit val computerReads: Reads[Computer] = (
     pkFromOption((__ \ "id").readNullable[Long]) and

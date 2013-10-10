@@ -21,7 +21,7 @@ import dal.SlickDatabaseAccess
 import models.DatabaseAccess
 
 trait CompanyResource { self: RepositoryComponent with Transactional with DatabaseAccess =>
-  object CompanyPlan  {
+  object CompanyPlan {
     import models.MyJsonProtocol._
 
 

@@ -8,15 +8,15 @@ import models.{Company, Implicits}
 /**
  * @author wolfs
  */
-object Companies extends Controller with Secured {
+object Companies extends Controller {
 
-  def companyJson = authenticated {
+  def companyJson = AuthenticatedAction {
     import Implicits._
     val company = Company(name = "Stuff")
     Ok(Json.toJson(company))
   }
 
-  def list = authenticated {
+  def list = AuthenticatedAction {
     import Implicits._
     Ok(Json.toJson(Company.list))
   }

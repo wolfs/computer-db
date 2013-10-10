@@ -9,3 +9,12 @@ bin
 .project
 .classpath
 .settings
+.gradle
+.idea
+.idea_modules
+out
+*.iml
+*.ipr
+*.iws
+.target
+.gradletasknamecache

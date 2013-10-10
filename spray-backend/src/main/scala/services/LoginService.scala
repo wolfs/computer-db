@@ -16,13 +16,12 @@ trait LoginService extends Directives with Json4sSupport with CookieAuthenticati
 
   implicit val formats = DefaultFormats
 
-
   val loginRoute =
-    path("api/login" / PathElement) { username =>
+    path("api" / "login" / Segment) { username =>
       (post & entity(as[JValue])) { user =>
         val password = (user \ "password").extract[String]
         if (username == "admin" && password == "1234") {
-          mySetCookie(UsernameCookie.encode(UserData(username, DateTime.now))) {
+          setCookie(UsernameCookie.encode(UserData(username, DateTime.now))) {
             complete(NoContent)
         }} else {
           complete(Unauthorized)

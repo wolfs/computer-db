@@ -9,6 +9,8 @@ import org.scalatra.ActionResult._
 import org.scalatra._
 import scalaz.NonEmptyList
 import org.json4s.scalaz.JsonScalaz._
+import org.scalatra.swagger._
+import org.scalatra.json.JacksonJsonSupport
 
 trait ComputerFilterComponent { self: RepositoryComponent with DatabaseAccess =>
   import MyJsonProtocol._
@@ -23,13 +25,27 @@ trait ComputerFilterComponent { self: RepositoryComponent with DatabaseAccess =>
     }
   }
 
-  class ComputerFilter extends ScalatraFilter with NativeJsonSupport with UrlGeneratorSupport {
+  class ComputerFilter(implicit val swagger: Swagger) extends ScalatraFilter
+  with JacksonJsonSupport
+  with UrlGeneratorSupport
+  with CookieAuthSupport
+  with SwaggerSupport {
     protected override val jsonFormats = DefaultFormats
+
+    override protected val applicationName = Some("computers")
+    protected val applicationDescription = "The computer-database API. It exposes operations for browsing and searching lists of computers, and retrieving single computers."
+
+    before() {
+      if (requestPath.startsWith("/api/") && !requestPath.startsWith("/api/login/")) {
+        cookieAuth
+      }
+    }
 
     def convertBodyTo[T: JSONR]: T = {
       val computerResult = parsedBody.convertTo[T]
       computerResult.toOption.getOrElse(halt())
     }
+
 
     val byId = get("/api/computers/:id") {
       withTransaction { implicit session =>
@@ -48,7 +64,18 @@ trait ComputerFilterComponent { self: RepositoryComponent with DatabaseAccess =>
         }
       }
     }
-    get("/api/computers/?") {
+
+    val getComputers =
+    (apiOperation[String]("getComputers")
+      summary "Show all computers"
+      notes "Shows all the computers in the computer-db. This view is paginated, sorted and can be filtered"
+      parameter queryParam[Option[Int]]("p").description("The current page to show. Starts at 0")
+      parameter queryParam[Option[String]]("f").description("The current filter to apply.")
+      parameter queryParam[Option[Int]]("s").description("Sort by which column.")
+      parameter queryParam[Option[Boolean]]("d").description("Sort descending.")
+      )
+
+    get("/api/computers/?", operation(getComputers)) {
       val page = params.getOrElse("p", "0").toInt
       val filter = params.getOrElse("f", "")
       val sort = params.getOrElse("s", "1").toInt

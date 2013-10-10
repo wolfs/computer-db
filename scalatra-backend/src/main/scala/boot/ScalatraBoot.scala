@@ -20,16 +20,20 @@ import javax.servlet.DispatcherType
 import java.util.EnumSet
 import org.eclipse.jetty.servlet.ServletHolder
 import javax.servlet.Servlet
+import filter.LoginFilter
+import filter.ResourcesApp
+import filter.ComputersSwagger
+import org.scalatra.servlet.ServletApiImplicits._
 
 object ScalatraBoot extends H2DbAccess {
 
   lazy val app = new SlickDal(H2Driver, db)
   with ComputerFilterComponent
 
-  def addFilter(filter: Filter, current: ServletContextHandler) {
+  def addFilter(filter: Filter, current: ServletContextHandler, path: String = "/*") {
     val holder = new FilterHolder(filter)
     holder.setName(filter.getClass().getName())
-    current.addFilter(holder, "/*", EnumSet.noneOf(classOf[DispatcherType]))
+    current.addFilter(holder, path, EnumSet.noneOf(classOf[DispatcherType]))
   }
 
   def main(args: Array[String]) {
@@ -44,8 +48,17 @@ object ScalatraBoot extends H2DbAccess {
     val context = new WebAppContext()
     context setContextPath "/"
     context.setBaseResource(Resource.newResource(new URL(here.toURI().toURL(),"../angular-frontend/target/generated-web/public")))
+
+    implicit val swagger = new ComputersSwagger
+
     addFilter(new app.CompanyFilter, context)
     addFilter(new app.ComputerFilter, context)
+    addFilter(new LoginFilter, context)
+    val holder = new ServletHolder()
+    holder.setServlet(new ResourcesApp)
+    holder.setName("Stuff")
+    holder.setInitOrder(10)
+    context.addServlet(holder, "/api-docs/*")
     context.addServlet(classOf[DefaultServlet], "/")
 
     server.setHandler(context)

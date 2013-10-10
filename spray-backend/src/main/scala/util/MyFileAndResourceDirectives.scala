@@ -46,8 +46,8 @@ trait MyFileAndResourceDirectives extends FileAndResourceDirectives {
             respondWithLastModifiedHeader(file.lastModified) {
               if (file.isFile && file.canRead) {
                 implicit val bufferMarshaller = BasicMarshallers.byteArrayMarshaller(resolver(file.getName))
-                if (0 < settings.FileChunkingThresholdSize && settings.FileChunkingThresholdSize <= file.length)
-                  complete(file.toByteArrayStream(settings.FileChunkingChunkSize.toInt))
+                if (0 < settings.fileChunkingThresholdSize && settings.fileChunkingThresholdSize <= file.length)
+                  complete(file.toByteArrayStream(settings.fileChunkingChunkSize.toInt))
                 else complete(FileUtils.readAllBytes(file))
               } else reject
             }

@@ -15,6 +15,6 @@ DELETE  /api/login/:user            controllers.AngularApplication.logout(user: 
 GET     /api/companies              controllers.Companies.list
 
 # Map static resources from the /public folder to the / URL path
-GET     /*file                      controllers.Assets.at(path="/public", file)
 GET     /                           controllers.Assets.at(path="/public", file="index.html")
+GET     /*file                      controllers.Assets.at(path="/public", file)
 

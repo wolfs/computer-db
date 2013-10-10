@@ -8,7 +8,7 @@ trait UnapplyPath {
 }
 
 case class PrefixSeg(prefix: String, OldSeg: UnapplyPath = PrefixSeg.UnapplySeg) extends
-UnapplyPath {
+  UnapplyPath {
   def unapply(path: String): Option[List[String]] = path match {
     case OldSeg(`prefix` :: remaining) => Some(remaining)
     case _ => None
